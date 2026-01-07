@@ -32,4 +32,4 @@ Decibel Pro 是一款專為 iPhone 17 Pro 優化的極致分貝計 Web App，結
    - **注意**：由於瀏覽器安全政策，請確保於 **HTTPS** 環境下執行，以獲得麥克風存取權限。
 
 ---
-Produced by Decibel Pro Team | 2026 Summer Trip Series
+Developed for high-precision mobile acoustic monitoring.
