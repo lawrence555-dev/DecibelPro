@@ -56,7 +56,10 @@ export function useHistory() {
     }, [user]);
 
     const saveMeasurement = useCallback(async (data) => {
-        if (!user) return;
+        if (!user) {
+            console.error('Firebase Auth not ready. Check if API keys are set in src/firebase.js');
+            return { success: false, error: 'Auth Not Ready' };
+        }
 
         try {
             // 1. Add new record
@@ -75,15 +78,18 @@ export function useHistory() {
             const snapshot = await getDocs(q);
 
             if (snapshot.size > 10) {
-                // Delete all but the latest 10
                 const docsToDelete = snapshot.docs.slice(10);
                 const deletePromises = docsToDelete.map(d => deleteDoc(doc(db, 'measurements', d.id)));
                 await Promise.all(deletePromises);
             }
+            return { success: true };
         } catch (err) {
             console.error('Error saving measurement:', err);
+            return { success: false, error: err.message };
         }
     }, [user]);
 
-    return { user, history, loading, saveMeasurement };
+    const isConfigured = auth.app.options.apiKey !== 'YOUR_API_KEY';
+
+    return { user, history, loading, saveMeasurement, isConfigured };
 }

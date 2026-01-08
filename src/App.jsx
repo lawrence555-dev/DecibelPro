@@ -35,7 +35,7 @@ function App() {
     });
 
     const { address } = useLocation();
-    const { history, saveMeasurement } = useHistory();
+    const { history, saveMeasurement, isConfigured, loading: historyLoading } = useHistory();
 
     // Color semantics based on user specs
     const colorClass = useMemo(() => {
@@ -60,19 +60,30 @@ function App() {
 
     const isViolation = db > regulation.limit;
 
-    const handleSave = () => {
-        if (isEnabled && db > 0) {
-            saveMeasurement({
-                db: Math.round(db),
-                leq: Math.round(leq),
-                peak: Math.round(peak),
-                address,
-                weighting,
-                timestamp: new Date().toISOString()
-            });
-            alert('已存證至雲端 (僅保留最新 10 筆)');
-        } else if (!isEnabled) {
+    const handleSave = async () => {
+        if (!isEnabled || db <= 0) {
             alert('請先開始監測再進行備份');
+            return;
+        }
+
+        if (!isConfigured) {
+            alert('❌ 雲端未設定：請先於 src/firebase.js 填入您的 Firebase API 金鑰。');
+            return;
+        }
+
+        const result = await saveMeasurement({
+            db: Math.round(db),
+            leq: Math.round(leq),
+            peak: Math.round(peak),
+            address,
+            weighting,
+            timestamp: new Date().toISOString()
+        });
+
+        if (result.success) {
+            alert('✅ 已上傳存證 (僅保留最新 10 筆)');
+        } else {
+            alert(`⚠️ 儲存失敗：${result.error}`);
         }
     };
 
@@ -279,14 +290,23 @@ function App() {
                 {isHistoryOpen && (
                     <div className="absolute inset-0 z-50 bg-gray-900/95 backdrop-blur-xl p-8 flex flex-col">
                         <div className="flex justify-between items-center mb-8">
-                            <h2 className="text-white font-bold text-xl">最近 10 筆存證紀錄</h2>
+                            <div className="flex flex-col">
+                                <h2 className="text-white font-bold text-xl">最近 10 筆存證紀錄</h2>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className={`w-2 h-2 rounded-full ${isConfigured ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                                    <span className="text-white/30 text-[10px] uppercase tracking-widest font-bold">
+                                        {isConfigured ? 'Cloud Sync Active' : 'Cloud Unconfigured (Check Keys)'}
+                                    </span>
+                                </div>
+                            </div>
                             <button onClick={() => setIsHistoryOpen(false)}>
                                 <X className="text-white/50" />
                             </button>
                         </div>
 
                         <div className="flex-1 overflow-y-auto space-y-4">
-                            {history.length === 0 && <p className="text-white/20 text-center mt-10 text-sm">尚無雲端紀錄</p>}
+                            {historyLoading && <p className="text-white/20 text-center mt-10 text-sm animate-pulse">連線中...</p>}
+                            {!historyLoading && history.length === 0 && <p className="text-white/20 text-center mt-10 text-sm">尚無雲端紀錄</p>}
                             {history.map((record) => (
                                 <div key={record.id} className="glass p-4 rounded-2xl flex justify-between items-center border border-white/5 hover:border-white/20 transition">
                                     <div className="flex flex-col">
