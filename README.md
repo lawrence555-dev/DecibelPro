@@ -64,6 +64,13 @@
 6. **Step 6**: Firebase 存接 - 配置 Firestore 儲存路徑與歷史紀錄讀取。
 
 ---
+## 部署建議 (Deployment)
+本專案已針對 **Render** 進行優化，推薦使用 Render 託管：
+1. **靜態網站 (Static Site)**：選擇 Render 的 Static Site 類型。
+2. **建置指令 (Build Command)**：`npm run build`
+3. **發佈目錄 (Publish Directory)**：`dist`
+4. **HTTPS**：Render 會自動提供 SSL 憑證，這對啟用**麥克風**與**相機**權限至關重要。
+
 ## 如何啟動
 1. `npm install`
 2. `npm run dev`

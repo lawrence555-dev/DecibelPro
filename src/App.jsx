@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Camera, Settings, History, Mic, Volume2, ShieldAlert, Navigation } from 'lucide-react';
+import { Camera, Settings, History, Mic, Volume2, ShieldAlert, Navigation, X, Trash2 } from 'lucide-react';
 import { useAcousticEngine } from './hooks/useAcousticEngine';
 import { useLocation } from './hooks/useLocation';
 import { getCurrentRegulation } from './utils/regulations';
 import { CameraOverlay } from './components/CameraOverlay';
 import { Spectrum } from './components/Spectrum';
+import { useHistory } from './hooks/useHistory';
 
 function App() {
     const [isEnabled, setIsEnabled] = useState(false);
     const [weighting, setWeighting] = useState('A');
     const [offset, setOffset] = useState(0);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [regulation, setRegulation] = useState(getCurrentRegulation());
 
     const { db, leq, peak, spectrum, resetStats } = useAcousticEngine({
@@ -21,6 +23,7 @@ function App() {
     });
 
     const { address } = useLocation();
+    const { history, saveMeasurement } = useHistory();
 
     // Color semantics based on user specs
     const colorClass = useMemo(() => {
@@ -45,6 +48,20 @@ function App() {
 
     const isViolation = db > regulation.limit;
 
+    const handleSave = () => {
+        if (db > 0) {
+            saveMeasurement({
+                db: Math.round(db),
+                leq: Math.round(leq),
+                peak: Math.round(peak),
+                address,
+                weighting,
+                timestamp: new Date().toISOString()
+            });
+            alert('已存證至雲端 (僅保留最新 10 筆)');
+        }
+    };
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-950 font-sans">
             <div className={`iphone-container relative overflow-hidden transition-all duration-700 ${isViolation ? 'ring-inset ring-8 ring-red-500/20' : ''}`}>
@@ -63,7 +80,9 @@ function App() {
                             <h1 className="text-white/90 font-semibold text-sm tracking-[0.2em] uppercase">Decibel Pro Ultra</h1>
                             <span className="text-white/30 text-[10px] tracking-widest mt-1">V2.0 STABLE</span>
                         </div>
-                        <History className="text-white/40 w-6 h-6 cursor-pointer hover:text-white transition" />
+                        <button onClick={() => setIsHistoryOpen(true)}>
+                            <History className="text-white/40 w-6 h-6 cursor-pointer hover:text-white transition" />
+                        </button>
                     </div>
 
                     {/* Location Bar */}
@@ -140,13 +159,13 @@ function App() {
 
                         <div className="flex flex-col items-center gap-2">
                             <button
-                                onClick={() => setWeighting(weighting === 'A' ? 'C' : 'A')}
+                                onClick={handleSave}
                                 className="glass p-4 rounded-full cursor-pointer hover:bg-white/10 active:scale-90 transition"
                             >
                                 <Volume2 className="text-white/80 w-6 h-6" />
                             </button>
                             <span className="text-white/30 text-[10px] font-medium tracking-wider leading-none">
-                                {weighting === 'A' ? 'A-Weighting' : 'C-Weighting'}
+                                雲端備份
                             </span>
                         </div>
                     </div>
@@ -165,6 +184,42 @@ function App() {
                     address={address}
                     weighting={weighting}
                 />
+
+                {/* History Overlay */}
+                {isHistoryOpen && (
+                    <div className="absolute inset-0 z-50 bg-dark-bg/95 backdrop-blur-xl p-8 flex flex-col">
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-white font-bold text-xl">最近 10 筆存證紀錄</h2>
+                            <button onClick={() => setIsHistoryOpen(false)}>
+                                <X className="text-white/50" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto space-y-4">
+                            {history.length === 0 && <p className="text-white/20 text-center mt-10">尚無雲端紀錄</p>}
+                            {history.map((record) => (
+                                <div key={record.id} className="glass p-4 rounded-2xl flex justify-between items-center">
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-noise-red font-bold text-lg">{record.db} dB</span>
+                                            <span className="text-white/30 text-[10px] uppercase">{record.weighting}W</span>
+                                        </div>
+                                        <span className="text-white/50 text-xs mt-1">{record.address}</span>
+                                        <span className="text-white/20 text-[10px] mt-0.5">{new Date(record.timestamp || record.createdAt?.toDate()).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className="text-white/40 text-[10px]">Leq: {record.leq}</span>
+                                        <span className="text-white/40 text-[10px]">Peak: {record.peak}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <p className="text-white/10 text-[10px] text-center mt-4">
+                            系統僅保留每個用戶最新的 10 筆數據以節省空間
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
