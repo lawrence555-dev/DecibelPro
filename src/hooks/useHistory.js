@@ -38,9 +38,8 @@ export function useHistory() {
 
         const q = query(
             collection(db, 'measurements'),
-            where('userId', '==', user.uid),
-            orderBy('createdAt', 'desc'),
-            limit(20) // Get more than 10 to assist with trimming if needed
+            where('userId', '==', user.uid)
+            // Removed orderBy to avoid requiring a composite index in Firebase
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -48,7 +47,15 @@ export function useHistory() {
                 id: doc.id,
                 ...doc.data()
             }));
-            setHistory(data.slice(0, 10)); // UI only shows top 10
+
+            // Sort by createdAt in-memory
+            const sortedData = data.sort((a, b) => {
+                const timeA = a.createdAt?.toMillis() || new Date(a.timestamp).getTime() || 0;
+                const timeB = b.createdAt?.toMillis() || new Date(b.timestamp).getTime() || 0;
+                return timeB - timeA;
+            });
+
+            setHistory(sortedData.slice(0, 10)); // UI only shows top 10
             setLoading(false);
         });
 
@@ -72,13 +79,20 @@ export function useHistory() {
             // 2. Cleanup: Ensure only latest 10 exist
             const q = query(
                 collection(db, 'measurements'),
-                where('userId', '==', user.uid),
-                orderBy('createdAt', 'desc')
+                where('userId', '==', user.uid)
             );
             const snapshot = await getDocs(q);
 
             if (snapshot.size > 10) {
-                const docsToDelete = snapshot.docs.slice(10);
+                // Sort in memory for cleanup
+                const sortedDocs = [...snapshot.docs].sort((a, b) => {
+                    const timeA = a.data().createdAt?.toMillis() || new Date(a.data().timestamp).getTime() || 0;
+                    const timeB = b.data().createdAt?.toMillis() || new Date(b.data().timestamp).getTime() || 0;
+                    return timeB - timeA;
+                });
+
+                // Delete all but the latest 10
+                const docsToDelete = sortedDocs.slice(10);
                 const deletePromises = docsToDelete.map(d => deleteDoc(doc(db, 'measurements', d.id)));
                 await Promise.all(deletePromises);
             }
