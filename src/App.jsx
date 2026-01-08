@@ -61,7 +61,7 @@ function App() {
     const isViolation = db > regulation.limit;
 
     const handleSave = async () => {
-        if (!isEnabled || db <= 0) {
+        if (!isEnabled) {
             alert('請先開始監測再進行備份');
             return;
         }
@@ -128,19 +128,19 @@ function App() {
                             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
 
                             <span className={`text-7xl font-bold ${colorClass} transition-colors duration-500 tabular-nums drop-shadow-sm`}>
-                                {isEnabled ? Math.round(db) : '--'}
+                                {isEnabled ? Math.max(0, Math.round(db)) : '--'}
                             </span>
                             <span className="text-white/30 text-xs mt-3 font-semibold tracking-[0.3em] uppercase">dB({weighting})</span>
 
                             <div className="mt-6 flex gap-6">
                                 <div className="flex flex-col items-center">
                                     <span className="text-white/20 text-[8px] uppercase tracking-widest">Leq</span>
-                                    <span className="text-white/70 text-sm font-medium">{isEnabled ? Math.round(leq) : '--'}</span>
+                                    <span className="text-white/70 text-sm font-medium">{isEnabled ? Math.max(0, Math.round(leq)) : '--'}</span>
                                 </div>
                                 <div className="h-6 w-[1px] bg-white/10" />
                                 <div className="flex flex-col items-center">
                                     <span className="text-white/20 text-[8px] uppercase tracking-widest">Peak</span>
-                                    <span className="text-white/70 text-sm font-medium">{isEnabled ? Math.round(peak) : '--'}</span>
+                                    <span className="text-white/70 text-sm font-medium">{isEnabled ? Math.max(0, Math.round(peak)) : '--'}</span>
                                 </div>
                             </div>
                         </div>
