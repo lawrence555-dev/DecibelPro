@@ -1,6 +1,0 @@
-services:
-  - type: static
-    name: decibel-pro
-    env: static
-    buildCommand: ""
-    publishPath: "."

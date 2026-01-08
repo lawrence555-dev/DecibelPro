@@ -1,35 +1,70 @@
-# Decibel Pro (專業分貝計)
+# Decibel Pro Ultra (V2.0) 系統開發規劃書
 
-Decibel Pro 是一款專為 iPhone 17 Pro 優化的極致分貝計 Web App，結合了奢華的毛玻璃美學 (Glassmorphism) 與精準的音訊平滑處理技術。
+## 1. 專案願景與目標
+開發一個專為 iPhone 17 Pro (402x874px) 優化的準專業級聲學測量 Web App。
+本系統旨在提供優於一般分貝計的準確度，具備環境噪音存證功能，並整合台灣在地噪音法規參考。
 
-## 核心特色
+## 2. 技術棧 (Tech Stack)
+- **核心框架**：React.js
+- **樣式系統**：Tailwind CSS (支援 Glassmorphism 磨砂質感)
+- **聲學引擎**：Web Audio API (AnalyserNode)
+- **後端服務**：Firebase (Authentication & Firestore)
+- **地理資訊**：Geolocation API + OpenStreetMap Reverse Geocoding
+- **影像處理**：HTML5 Camera API + Canvas API (用於生成浮水印報告)
 
-### 1. 極致流暢的讀數體驗
-- **平滑因子轉換**：採用高精確度平滑算法 (`currentValue += (targetValue - currentValue) * 0.08`)，消除數位讀數常見的生硬跳動，營造出如高級音響般的絲滑質感。
-- **即時視覺回饋**：圓形量表會隨著音量大小動態進行微縮放與發光效果。
+## 3. UI/UX 設計規範
+- **設備尺寸**：固定容器為 402px x 874px，支援 iOS `viewport-fit=cover`。
+- **視覺風格**：
+  - 深色美學底層 (#0a0a0c)，頂部帶有微弱徑向漸層。
+  - 中心為「正圓形」顯示盤，具備毛玻璃效果與邊框動態發光。
+  - **FFT 頻譜**：在背景或圓圈下方即時顯示 64-128 頻段的頻譜跳動。
+- **色彩語義**：
+  - < 50dB: 寧靜綠 (#a7f3d0)
+  - 50-75dB: 注意黃 (#fde68a)
+  - > 75dB: 警告紅 (#fca5a5)
 
-### 2. 高級視覺美學 (UI/UX)
-- **Glassmorphism 設計**：核心顯示區具備強力的背景模糊 (`blur(20px)`)、細邊框與層次感。
-- **動態色彩分級**：
-  - **粉綠色 (#a7f3d0)**：安全環境 (< 50 dB)
-  - **粉黃色 (#fde68a)**：注意環境 (50-75 dB)
-  - **粉紅色 (#fca5a5)**：危險音量 (> 75 dB)
-- **視覺頻譜圖**：正圓下方設有 20 根隨動態變化的物理長條。
+## 4. 核心功能規格
 
-### 3. 在地化法規制動
-- **台灣噪音管制標準連動**：系統會根據即時時間（日間/晚間/夜間），自動高亮顯示對應的第二類區噪音限制標準。
-- **全螢幕警告機制**：當讀數超過 80dB (或該時段限制值) 時，觸發四周紅色呼吸燈視覺警告。
+### 4.1 專業級測量引擎
+- **計權濾波器 (Weighting)**：
+  - **A-Weighting (dBA)**：模擬人耳聽覺，用於一般環境噪音測量。
+  - **C-Weighting (dBC)**：用於捕捉重低音 or 機械撞擊聲。
+- **響應時間 (Response)**：
+  - **Fast (125ms)**：捕捉瞬時噪音。
+  - **Slow (1000ms)**：穩定背景讀數。
+- **精密指標**：
+  - **Leq (等效連續聲級)**：計算測量期間的能量平均值 (Energy Average)。
+  - **Peak (峰值)**：記錄瞬間最高聲壓級。
+- **校準系統**：提供 dB Offset 調整功能，用於對照專業儀器 (如 Nor104) 進行硬體補償。
 
-## 技術棧
-- **架構**：單檔案 HTML5 / CSS / JavaScript (無需編譯)
-- **樣式**：Tailwind CSS / Vanilla CSS
-- **核心**：Web Audio API (AnalyserNode)
-- **字體**：Google Fonts (Inter & Noto Sans TC)
+### 4.2 舉證拍照系統 (Camera Overlay)
+- 呼叫後置相機進行即時取景。
+- **Canvas 合成功能**：在快門按下時，自動在影像下方嵌入證據資訊：
+  - 當前分貝值、Leq、Max 指標。
+  - 地理位置名稱 (如：雲林縣西螺鎮)。
+  - 時間戳記與「Nor104 校正標記」。
 
-## 部署與使用
-1. **本地執行**：直接使用瀏覽器開啟 `index.html`。
-2. **託管建議**：建議部署於 Render (Static Site) 或 GitHub Pages。
-   - **注意**：由於瀏覽器安全政策，請確保於 **HTTPS** 環境下執行，以獲得麥克風存取權限。
+### 4.3 地理位置與法規
+- **地理逆編碼**：將 GPS 座標轉換為中文行政區域名稱。
+- **台灣法規參考**：
+  - 參照第二類區標準：日間 60dB / 晚間 50dB / 夜間 50dB。
+  - 根據系統時間自動顯示當前時段建議。
+
+### 4.4 雲端存證 (Firebase)
+- **匿名登入**：確保每個用戶有獨立的 UUID。
+- **資料儲存路徑**：`collection(db, 'artifacts', appId, 'public', 'data', 'measurements')`
+- **數據導出**：支援將測量清單顯示於歷史紀錄。
+
+## 5. 開發階段
+1. **Step 1**: UI 骨架建立 - 實現 iPhone 17 Pro 尺寸容器與毛玻璃圓形儀表。
+2. **Step 2**: 聲學算法實現 - 撰寫 Web Audio API 邏輯，包含 FFT 轉換與 A/C 計權公式。
+3. **Step 3**: 統計邏輯優化 - 加入 Leq、Peak 與數值平滑處理 (Smoothing)。
+4. **Step 4**: 地理與法規整合 - 加入 Geolocation 與自動時段判定。
+5. **Step 5**: 拍照與浮水印 - 實作 Camera 模式與 Canvas 繪製報告功能。
+6. **Step 6**: Firebase 存接 - 配置 Firestore 儲存路徑與歷史紀錄讀取。
 
 ---
-Developed for high-precision mobile acoustic monitoring.
+## 如何啟動
+1. `npm install`
+2. `npm run dev`
+3. 確保在 HTTPS 下運行以取得麥克風與相機權限。
