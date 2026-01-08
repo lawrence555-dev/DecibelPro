@@ -1,18 +1,21 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import { getFirestore } from 'firebase/firestore';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 
-// NOTE: User should replace these with their actual Firebase project config
+// Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "decibel-pro-v2.firebaseapp.com",
-    projectId: "decibel-pro-v2",
-    storageBucket: "decibel-pro-v2.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyAnF2q_CIsCdZ3w2U1ZkaAHS02WgPpa21g",
+    authDomain: "decibelpro-v2.firebaseapp.com",
+    projectId: "decibelpro-v2",
+    storageBucket: "decibelpro-v2.firebasestorage.app",
+    messagingSenderId: "662151740494",
+    appId: "1:662151740494:web:b9bb15b12c306c4821171f"
 };
 
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// Exports for the app
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 
