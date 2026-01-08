@@ -8,7 +8,7 @@ import {
     Navigation,
     X,
     Trash2,
-    CloudUpload,
+    UploadCloud,
     SlidersHorizontal
 } from 'lucide-react';
 import { useAcousticEngine } from './hooks/useAcousticEngine';
@@ -178,7 +178,7 @@ function App() {
                                 onClick={handleSave}
                                 className="glass p-4 rounded-full cursor-pointer hover:bg-white/10 active:scale-90 transition"
                             >
-                                <CloudUpload className="text-white/80 w-6 h-6" />
+                                <UploadCloud className="text-white/80 w-6 h-6" />
                             </button>
                             <span className="text-white/30 text-[10px] font-medium tracking-wider leading-none">
                                 雲端備份

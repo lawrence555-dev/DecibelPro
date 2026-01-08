@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { X, Camera as CameraIcon, Download, RotateCcw } from 'lucide-react';
+import { X, Camera as CameraIcon, Download, RotateCcw, Share } from 'lucide-react';
 
 export function CameraOverlay({ isOpen, onClose, db, leq, peak, address, weighting }) {
     const videoRef = useRef(null);
@@ -131,12 +131,37 @@ export function CameraOverlay({ isOpen, onClose, db, leq, peak, address, weighti
         setCapturedImage(canvas.toDataURL('image/jpeg', 0.95));
     };
 
-    const download = () => {
+    const download = async () => {
         if (!capturedImage) return;
-        const link = document.createElement('a');
-        link.download = `DecibelPro_Evidence_${Date.now()}.jpg`;
-        link.href = capturedImage;
-        link.click();
+
+        try {
+            // Convert Base64 to File object for Sharing
+            const res = await fetch(capturedImage);
+            const blob = await res.blob();
+            const file = new File([blob], `DecibelPro_Evidence_${Date.now()}.jpg`, { type: 'image/jpeg' });
+
+            // Check if Web Share API is supported for files (Native iOS "Save Image")
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: '噪音存證報告',
+                    text: '由 Decibel Pro Ultra 生成'
+                });
+            } else {
+                // Fallback to standard <a> download
+                const link = document.createElement('a');
+                link.download = `DecibelPro_Evidence_${Date.now()}.jpg`;
+                link.href = capturedImage;
+                link.click();
+            }
+        } catch (err) {
+            console.error('Save failed:', err);
+            // Last resort fallback
+            const link = document.createElement('a');
+            link.download = `DecibelPro_Evidence_${Date.now()}.jpg`;
+            link.href = capturedImage;
+            link.click();
+        }
     };
 
     if (!isOpen) return null;
@@ -189,8 +214,8 @@ export function CameraOverlay({ isOpen, onClose, db, leq, peak, address, weighti
                             onClick={download}
                             className="flex-[1.5] bg-white py-4 rounded-2xl text-gray-950 font-bold flex items-center justify-center gap-2 shadow-xl"
                         >
-                            <Download size={20} />
-                            下載證據報告
+                            <Share size={20} />
+                            分享並儲存報告
                         </button>
                     </div>
                 )}
