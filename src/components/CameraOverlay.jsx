@@ -100,23 +100,31 @@ export function CameraOverlay({ isOpen, onClose, db, leq, peak, address, weighti
         // 4. Content - Main dB
         const color = db > 75 ? '#ff4d4d' : '#22c55e';
         ctx.fillStyle = color;
-        ctx.font = `bold ${85 * scale}px Inter, sans-serif`;
-        ctx.fillText(`${Math.round(db)}`, cardX + 40 * scale, cardY + 110 * scale);
+        const mainSize = 92 * scale;
+        ctx.font = `bold ${mainSize}px Inter, sans-serif`;
+        const valText = `${Math.round(db)}`;
+        const valWidth = ctx.measureText(valText).width;
+
+        ctx.fillText(valText, cardX + 40 * scale, cardY + 115 * scale);
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.font = `bold ${30 * scale}px Inter, sans-serif`;
-        ctx.fillText(`dB(${weighting})`, cardX + 45 * scale + ctx.measureText(`${Math.round(db)}`).width, cardY + 105 * scale);
+        ctx.font = `bold ${32 * scale}px Inter, sans-serif`;
+        // Add explicit spacing (25px scaled) to prevent overlap with the large number
+        ctx.fillText(`dB(${weighting})`, cardX + 65 * scale + valWidth, cardY + 105 * scale);
 
         // 5. Secondary Stats (Leq / Peak)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-        ctx.font = `${24 * scale}px Inter, sans-serif`;
-        ctx.fillText(`LEQ ${Math.round(leq)} dB`, cardX + 40 * scale, cardY + 155 * scale);
-        ctx.fillText(`PEAK ${Math.round(peak)} dB`, cardX + 220 * scale, cardY + 155 * scale);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.font = `${26 * scale}px Inter, sans-serif`;
+        ctx.fillText(`LEQ ${Math.round(leq)} dB`, cardX + 40 * scale, cardY + 165 * scale);
+
+        // Calculate dynamic peak position
+        const leqW = ctx.measureText(`LEQ ${Math.round(leq)} dB`).width;
+        ctx.fillText(`PEAK ${Math.round(peak)} dB`, cardX + 80 * scale + leqW, cardY + 165 * scale);
 
         // 6. Metadata (Address & Time)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.font = `${20 * scale}px Inter, sans-serif`;
-        ctx.fillText(address, cardX + 40 * scale, cardY + 195 * scale);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.font = `${22 * scale}px Inter, sans-serif`;
+        ctx.fillText(address, cardX + 40 * scale, cardY + 205 * scale);
 
         // 7. Branding & Calibration
         ctx.textAlign = 'right';
