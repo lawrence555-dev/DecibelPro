@@ -24,7 +24,13 @@ export function useAcousticEngine(options = {}) {
 
     const startEngine = useCallback(async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
+            });
             audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
             analyserRef.current = audioCtxRef.current.createAnalyser();
             analyserRef.current.fftSize = fftSize;

@@ -82,10 +82,8 @@ export class AcousticEngine {
             sum += Math.pow(10, db / 10);
         }
 
-        // Mean intensity
-        const mean = sum / frequencyData.length;
-        // Back to dB
-        let spl = 10 * Math.log10(mean || 1e-10);
+        // Total intensity sum across all bins
+        let spl = 10 * Math.log10(sum || 1e-10);
         spl += offset;
 
         // Update Peak

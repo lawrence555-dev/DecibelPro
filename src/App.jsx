@@ -21,7 +21,7 @@ import { useHistory } from './hooks/useHistory';
 function App() {
     const [isEnabled, setIsEnabled] = useState(false);
     const [weighting, setWeighting] = useState('A');
-    const [offset, setOffset] = useState(90); // Default calibration
+    const [offset, setOffset] = useState(85); // Adjusted for new total power math
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
