@@ -15,7 +15,7 @@ import { useAcousticEngine } from './hooks/useAcousticEngine';
 import { useLocation } from './hooks/useLocation';
 import { getCurrentRegulation } from './utils/regulations';
 import { CameraOverlay } from './components/CameraOverlay';
-import { Spectrum } from './components/Spectrum';
+import { AcousticVisualizer } from './components/AcousticVisualizer';
 import { useHistory } from './hooks/useHistory';
 
 function App() {
@@ -25,9 +25,10 @@ function App() {
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [vizMode, setVizMode] = useState('spectrum'); // 'spectrum' or 'waveform'
     const [regulation, setRegulation] = useState(getCurrentRegulation());
 
-    const { db, leq, peak, spectrum, resetStats } = useAcousticEngine({
+    const { db, leq, peak, spectrum, waveform, resetStats } = useAcousticEngine({
         isEnabled,
         weighting,
         offset,
@@ -157,8 +158,31 @@ function App() {
                         {isViolation && <span className="text-[10px] text-red-500/80 font-bold tracking-wider animate-pulse uppercase">超標警告</span>}
                     </div>
 
-                    {/* Spectrum */}
-                    <Spectrum data={spectrum} colorClass={colorClass} />
+                    {/* Visualizer Toggle */}
+                    <div className="w-full flex justify-center gap-4 mt-2">
+                        <button
+                            onClick={() => setVizMode('spectrum')}
+                            className={`text-[9px] uppercase tracking-widest font-bold px-3 py-1 rounded-full transition-all ${vizMode === 'spectrum' ? 'bg-white/10 text-white border border-white/20' : 'text-white/20 border border-transparent'}`}
+                        >
+                            Spectrum
+                        </button>
+                        <button
+                            onClick={() => setVizMode('waveform')}
+                            className={`text-[9px] uppercase tracking-widest font-bold px-3 py-1 rounded-full transition-all ${vizMode === 'waveform' ? 'bg-white/10 text-white border border-white/20' : 'text-white/20 border border-transparent'}`}
+                        >
+                            Waveform
+                        </button>
+                    </div>
+
+                    {/* Acoustic Visualizer (Advanced Line Chart) */}
+                    <div className="w-full px-2 mt-2">
+                        <AcousticVisualizer
+                            spectrum={spectrum}
+                            waveform={waveform}
+                            colorClass={colorClass}
+                            mode={vizMode}
+                        />
+                    </div>
 
                     {/* Controls */}
                     <div className="w-full flex justify-around items-center mb-10">

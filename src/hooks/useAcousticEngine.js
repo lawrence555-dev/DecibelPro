@@ -14,6 +14,7 @@ export function useAcousticEngine(options = {}) {
     const [leq, setLeq] = useState(0);
     const [peak, setPeak] = useState(0);
     const [spectrum, setSpectrum] = useState(new Float32Array(0));
+    const [waveform, setWaveform] = useState(new Uint8Array(0));
     const [error, setError] = useState(null);
 
     const audioCtxRef = useRef(null);
@@ -73,6 +74,11 @@ export function useAcousticEngine(options = {}) {
         setPeak(engineRef.current.getPeak());
         setSpectrum(dataArray);
 
+        // Fetch waveform data
+        const timeData = new Uint8Array(analyserRef.current.fftSize);
+        analyserRef.current.getByteTimeDomainData(timeData);
+        setWaveform(timeData);
+
         requestRef.current = requestAnimationFrame(update);
     }, [weighting, offset, smoothing]);
 
@@ -93,5 +99,5 @@ export function useAcousticEngine(options = {}) {
         }
     }, []);
 
-    return { db, leq, peak, spectrum, error, resetStats };
+    return { db, leq, peak, spectrum, waveform, error, resetStats };
 }
