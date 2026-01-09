@@ -21,7 +21,7 @@ import { useHistory } from './hooks/useHistory';
 function App() {
     const [isEnabled, setIsEnabled] = useState(false);
     const [weighting, setWeighting] = useState('A');
-    const [offset, setOffset] = useState(85); // Adjusted for new total power math
+    const [offset, setOffset] = useState(120); // Aligned for 50dB ambient floor
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
